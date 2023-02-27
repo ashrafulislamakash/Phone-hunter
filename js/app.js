@@ -1,18 +1,23 @@
-const loadPhones = async (searchText) => {
+const loadPhones = async (searchText, dataLimit) => {
   const url = `https://openapi.programming-hero.com/api/phones?search=${searchText}`;
   const res = await fetch(url);
   const data = await res.json();
-  displayPhones(data.data);
+  displayPhones(data.data, dataLimit);
 };
 
-const displayPhones = (phones) => {
+const displayPhones = (phones, dataLimit) => {
   const phonesContainer = document.getElementById("phone-container");
   phonesContainer.textContent = "";
-
   ///display  10phone
-  phones = phones.slice(0, 10);
+  const showAll = document.getElementById("showall");
+  if (dataLimit && phones.length > 10) {
+    phones = phones.slice(0, 10);
+    showAll.classList.remove("d-none");
+  } else {
+    showAll.classList.add("d-none");
+  }
 
-  // Display no phones found meaagae
+  // Display no phones found message
   const noPhone = document.getElementById("no-found-message");
   if (phones.length == 0) {
     noPhone.classList.remove("d-none");
@@ -35,26 +40,36 @@ const displayPhones = (phones) => {
                   longer.
                 </p>
               </div>
-            </div>
-    
-    `;
+            </div> `;
 
     phonesContainer.appendChild(phoneDiv);
   });
+
   // stop spinner or loader
   toggleSpinner(false);
 };
 
-document.getElementById("btn-search").addEventListener("click", function () {
-  //start Loader
-
+const processSearch = (dataLimit) => {
   toggleSpinner(true);
-
   const searchField = document.getElementById("search-field");
   const searchText = searchField.value;
-  searchField.value = "";
-  loadPhones(searchText);
+  loadPhones(searchText, dataLimit);
+};
+
+// handle search button click
+document.getElementById("btn-search").addEventListener("click", function () {
+  // start loader
+  processSearch(10);
 });
+
+// search input field enter key handler
+document
+  .getElementById("search-field")
+  .addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      processSearch(10);
+    }
+  });
 
 const toggleSpinner = (isLoading) => {
   const loaderSection = document.getElementById("loader");
@@ -65,4 +80,8 @@ const toggleSpinner = (isLoading) => {
   }
 };
 
-// loadPhones();
+// not the best way to load show All
+document.getElementById("btn-show-all").addEventListener("click", function () {
+  processSearch();
+ 
+});
